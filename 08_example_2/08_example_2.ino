@@ -37,15 +37,29 @@ void loop() {
 
   distance = USS_measure(PIN_TRIG, PIN_ECHO); // read distance
 
-  if ((distance == 0.0) || (distance > _DIST_MAX)) {
-      distance = _DIST_MAX + 10.0;    // Set Higher Value
-      digitalWrite(PIN_LED, 1);       // LED OFF
-  } else if (distance < _DIST_MIN) {
-      distance = _DIST_MIN - 10.0;    // Set Lower Value
-      digitalWrite(PIN_LED, 1);       // LED OFF
-  } else {    // In desired Range
-      digitalWrite(PIN_LED, 0);       // LED ON      
+  if (distance < _DIST_MIN) distance = _DIST_MIN - 10.0;
+  if (distance > _DIST_MAX) distance = _DIST_MAX + 10.0;
+
+  int brightness = 255; // 기본값: 꺼짐
+
+  if (distance <= 100) {
+    brightness = 255; // 꺼짐
+  } 
+  else if (distance < 200) {
+    // 100~200mm 구간: 밝기 255 → 0으로 선형 감소
+    brightness = map(distance, 100, 200, 255, 0);
+  } 
+  else if (distance == 200) {
+    brightness = 0; // 최대
+  } 
+  else if (distance < 300) {
+    brightness = map(distance, 200, 300, 0, 255);
+  } 
+  else {
+    brightness = 255; // 꺼짐
   }
+
+  analogWrite(PIN_LED, brightness);
 
   // output the distance to the serial port
   Serial.print("Min:");        Serial.print(_DIST_MIN);
